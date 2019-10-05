@@ -20,7 +20,7 @@ contract('GameJam', (accounts) => {
   });
 
   it("balance variable should match the initialBalance passed in constructor", async () => {
-    const contractBalance = await gameJam.getContractBalance()
+    const contractBalance = await gameJam.balance()
     assert.equal(contractBalance, initialBalance, "gameJam balance should match initialBalance")
   });
 

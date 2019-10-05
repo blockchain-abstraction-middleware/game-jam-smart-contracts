@@ -9,7 +9,7 @@ contract GameJam {
 
   // Create a GameJam with a _balance
   // which will be the amount to be distributed to winners
-  constructor(uint _balance) public {
+  constructor(uint _balance) public payable {
     balance = _balance;
   }
 
@@ -23,9 +23,4 @@ contract GameJam {
 
     emit CompetitorAdded(competitor);
   }
-
-  // Getter for the balance variable
-  function getContractBalance() public view returns(uint) {
-		return balance;
-	}
 }
