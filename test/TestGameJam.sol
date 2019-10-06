@@ -19,4 +19,23 @@ contract TestGameJam {
     require(gameJam.stage() == GameJam.Stages.JamInProgress, "Initial Stage should be JamInProgress");
   }
 
+  function testPayoutDoesNotWorkAtInitialState() public {
+    GameJam gameJam = GameJam(DeployedAddresses.GameJam());
+    address payable potentialWinner = address(uint160(address(this))); // Cast to an address payable
+    bool r;
+    
+    // We're basically calling our contract externally with a raw call, forwarding all available gas, with
+    // msg.data equal to the throwing function selector that we want to be sure throws and using only the boolean
+    // value associated with the message call's success
+    (r, ) = address(gameJam).call(abi.encodePacked(gameJam.payoutWinner.selector, potentialWinner));
+    Assert.isFalse(r, "Call to payoutWinner should be unsuccessful when stage is JamInProgress");
+  }
+ 
+  function testFinishingTheDeployedContract() public {
+    GameJam gameJam = GameJam(DeployedAddresses.GameJam());
+    require(gameJam.stage() == GameJam.Stages.JamInProgress, "Stage should be JamInProgress before finish");
+    gameJam.finish.value(0)(address(this));
+    require(gameJam.stage() == GameJam.Stages.WinnerDeclaration, "Stage should be WinnerDeclaration after finish");
+  }
+
 }
