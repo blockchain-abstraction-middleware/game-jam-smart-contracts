@@ -14,4 +14,9 @@ contract TestGameJam {
     Assert.equal(address(gameJam).balance, expected, "Initial Balance should be zero");
   }
 
+  function testInitialStageUsingDeployedContract() public {
+    GameJam gameJam = GameJam(DeployedAddresses.GameJam());
+    require(gameJam.stage() == GameJam.Stages.JamInProgress, "Initial Stage should be JamInProgress");
+  }
+
 }
