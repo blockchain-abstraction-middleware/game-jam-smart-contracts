@@ -11,15 +11,20 @@ contract('GameJam', (accounts) => {
 
   beforeEach(async () => {
     gameJam = await GameJam.new(initialBalance)
+
   })
 
   it("whitelisted admin votes on a ballot", async () => {
+    const stage = await gameJam.stage();
+    assert.equal(stage, 0, "Stage should be 0; Registration")
     const competitorAdded = await gameJam.addCompetitor(admin, validIpfsHash)
 
     assert.equal(competitorAdded.logs[0].args.competitor, admin, "Failed to add competitor")
   });
 
   it("balance variable should match the initialBalance passed in constructor", async () => {
+    gameJam = await GameJam.new(initialBalance)
+
     const contractBalance = await gameJam.balance()
     assert.equal(contractBalance, initialBalance, "gameJam balance should match initialBalance")
   });
