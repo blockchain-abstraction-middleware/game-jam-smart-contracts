@@ -1,15 +1,22 @@
 pragma solidity 0.5.11;
+import "../node_modules/openzeppelin-solidity/contracts/access/Roles.sol"; //Import Roles to implement custom Role Based Access Control
 
 contract GameJam {
+  using Roles for Roles.Role;
+
   enum Stages {
         Registration,
         InProgress,
         Finished
     }
   uint public balance;
+  
 
   //Set the initial Stage
   Stages public stage = Stages.Registration;
+
+  //Define the roles
+  Roles.Role private admins;
 
   // Modifier used to restrict access unless a given Stage is active
   modifier onlyAtStage(Stages _stage) {
@@ -32,8 +39,32 @@ contract GameJam {
       nextStage();
   }
 
+  //Role Setup
+  // On Deploy, the sender of the transaction will be added as a admin
+  // Further admins could be added with a Role restricted addAdmins() function
+  function addAdminRoles(address[] memory _admins) public {
+        for(uint i = 0; i < _admins.length; i++)
+        {
+            admins.add(_admins[i]);
+        }
+  }
+  //Modifier for Admins
+  modifier onlyGameJamAdmin() {
+      require(isGameJamAdmin(msg.sender), "GameJamAdmin role required: caller does not have the GameJamAdmin role");
+      _;
+  }
+  // Function to check that the address is a valid admin
+  function isGameJamAdmin(address account) public view returns (bool) {
+        return admins.has(account);
+  }
+  function _addGameJamAdmin(address account) internal {
+    admins.add(account);
+    emit GameJamAdminAdded(account);
+  }
+
   mapping(address => string) public competitors;
 
+  event GameJamAdminAdded(address indexed account);
   event CompetitorAdded(address competitor);
   event GameJameStarted(uint startTime);
   event WinnerDeclared(address winner);
@@ -43,6 +74,7 @@ contract GameJam {
   // which will be the amount to be distributed to winners
   constructor(uint _balance) public payable {
     balance = _balance;
+    _addGameJamAdmin(msg.sender);
   }
 
   function addCompetitor(
@@ -52,6 +84,7 @@ contract GameJam {
     public
     onlyAtStage(Stages.Registration)
   {
+    require(bytes(ipfsHash).length == 46, "incorrect length");
     competitors[competitor] = ipfsHash;
 
     emit CompetitorAdded(competitor);
@@ -60,19 +93,20 @@ contract GameJam {
   // finish function is a payable used to declare the winner via their address
   // the function should only be called able when the GameJam is in Registration
   function start() public payable
-    onlyAtStage(Stages.Registration)
+    onlyGameJamAdmin //Only an admin can start the GameJam
+    onlyAtStage(Stages.Registration) //GameJam can only be start when in Registration State
     transitionNext {
-
       emit GameJameStarted(now);
     }
 
   // finish function is a payable used to declare the winner via their address
   // the function should only be called able when the GameJam is in Progress
   function finish(address winner) public payable
+    onlyGameJamAdmin //Only an admin can finish the GameJam
     onlyAtStage(Stages.InProgress)
     transitionNext {
-
-
+      //Ensure the winner is a registered competitor. The mapping result is initialised 0x0 so if winner is not in competitors then 0x0 is returned
+      require(keccak256(bytes(competitors[winner])) != keccak256(bytes("")), "Winner should be a registered competitor");
       emit WinnerDeclared(winner);
     }
 
