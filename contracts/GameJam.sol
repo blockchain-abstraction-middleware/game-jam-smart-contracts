@@ -101,7 +101,7 @@ contract GameJam {
     transitionNext {
       //Ensure the winner is a registered competitor. The mapping result is initialised "" so if winner is not in competitors then 0x0 is returned
       require(
-        keccak256(bytes(competitors[winner])) != keccak256(bytes("")),
+        bytes(competitors[winner]).length != 0,
         "Winner should be a registered competitor"
         );
       emit WinnerDeclared(winner);
@@ -110,13 +110,15 @@ contract GameJam {
   // payoutWinner is used after the Jam to payout the declared winner
   // and ultimately finish the GameJam.
   function payoutWinner(address payable winner) public payable
+    onlyGameJamAdmin //Only an admin can start the GameJam
     onlyAtStage(Stages.Finished) {
-      emit GameJamFinished(winner);
+      
       // If there are prizes to distribute
       if (balance > 0 && address(this).balance >= balance) {
         //Send the winner their prize and progress the state to Finished Stage
         winner.transfer(balance);
         balance = 0;
+        emit GameJamFinished(winner);
       }
   }
 }
