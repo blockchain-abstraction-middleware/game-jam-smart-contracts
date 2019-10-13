@@ -1,5 +1,6 @@
 pragma solidity 0.5.11;
-import "../node_modules/openzeppelin-solidity/contracts/access/Roles.sol"; //Import Roles to implement custom Role Based Access Control
+
+import "openzeppelin-solidity/contracts/access/Roles.sol";  //Import Roles to implement custom Role Based Access Control
 
 contract GameJam {
   using Roles for Roles.Role;
