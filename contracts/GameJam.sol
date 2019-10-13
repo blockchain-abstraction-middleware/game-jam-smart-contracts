@@ -41,13 +41,7 @@ contract GameJam {
 
   //Role Setup
   // On Deploy, the sender of the transaction will be added as a admin
-  // Further admins could be added with a Role restricted addAdmins() function
-  function addAdminRoles(address[] memory _admins) public {
-        for(uint i = 0; i < _admins.length; i++)
-        {
-            admins.add(_admins[i]);
-        }
-  }
+  // Further admins could be added with a Role restricted _addGameJamAdmin() function
   //Modifier for Admins
   modifier onlyGameJamAdmin() {
       require(isGameJamAdmin(msg.sender), "GameJamAdmin role required: caller does not have the GameJamAdmin role");
@@ -105,8 +99,11 @@ contract GameJam {
     onlyGameJamAdmin //Only an admin can finish the GameJam
     onlyAtStage(Stages.InProgress)
     transitionNext {
-      //Ensure the winner is a registered competitor. The mapping result is initialised 0x0 so if winner is not in competitors then 0x0 is returned
-      require(keccak256(bytes(competitors[winner])) != keccak256(bytes("")), "Winner should be a registered competitor");
+      //Ensure the winner is a registered competitor. The mapping result is initialised "" so if winner is not in competitors then 0x0 is returned
+      require(
+        keccak256(bytes(competitors[winner])) != keccak256(bytes("")),
+        "Winner should be a registered competitor"
+        );
       emit WinnerDeclared(winner);
     }
 
