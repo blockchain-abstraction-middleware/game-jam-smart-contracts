@@ -1,4 +1,4 @@
-pragma solidity 0.5.11;
+pragma solidity ^0.5.11;
 
 import "openzeppelin-solidity/contracts/access/Roles.sol";  //Import Roles to implement custom Role Based Access Control
 
@@ -74,9 +74,9 @@ contract GameJam {
 
   function addCompetitor(
     address competitor,
-    string memory ipfsHash
+    string calldata ipfsHash
   )
-    public
+    external
     onlyAtStage(Stages.Registration)
   {
     require(bytes(ipfsHash).length == 46, "incorrect length");
@@ -87,7 +87,7 @@ contract GameJam {
 
   // finish function is a payable used to declare the winner via their address
   // the function should only be called able when the GameJam is in Registration
-  function start() public payable
+  function start() external payable
     onlyGameJamAdmin //Only an admin can start the GameJam
     onlyAtStage(Stages.Registration) //GameJam can only be start when in Registration State
     transitionNext {
@@ -96,7 +96,7 @@ contract GameJam {
 
   // finish function is a payable used to declare the winner via their address
   // the function should only be called able when the GameJam is in Progress
-  function finish(address winner) public payable
+  function finish(address winner) external payable
     onlyGameJamAdmin //Only an admin can finish the GameJam
     onlyAtStage(Stages.InProgress)
     transitionNext {
@@ -110,7 +110,7 @@ contract GameJam {
 
   // payoutWinner is used after the Jam to payout the declared winner
   // and ultimately finish the GameJam.
-  function payoutWinner(address payable winner) public payable
+  function payoutWinner(address payable winner) external payable
     onlyGameJamAdmin //Only an admin can start the GameJam
     onlyAtStage(Stages.Finished) {
       
