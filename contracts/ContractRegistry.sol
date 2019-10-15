@@ -1,6 +1,8 @@
 pragma solidity ^0.5.11;
 
-contract ContractRegistry {
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+
+contract ContractRegistry is Ownable {
   mapping (string => address) private contractAddresses;
 
   event UpdateContract(string name, address indexed contractAddress);
@@ -10,6 +12,7 @@ contract ContractRegistry {
     address _address
   )
     external
+    onlyOwner
     returns (address)
   {
     contractAddresses[_name] = _address;
