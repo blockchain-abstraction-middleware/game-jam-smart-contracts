@@ -2,6 +2,7 @@ pragma solidity ^0.5.11;
 
 import "openzeppelin-solidity/contracts/access/Roles.sol";  //Import Roles to implement custom Role Based Access Control
 
+
 contract GameJam {
     using Roles for Roles.Role;
 
@@ -46,10 +47,12 @@ contract GameJam {
         require(isGameJamAdmin(msg.sender), "GameJamAdmin role required: caller does not have the GameJamAdmin role");
         _;
     }
+
     // Function to check that the address is a valid admin
     function isGameJamAdmin(address account) public view returns (bool) {
         return admins.has(account);
     }
+
     function _addGameJamAdmin(address account) internal {
         admins.add(account);
         emit GameJamAdminAdded(account);

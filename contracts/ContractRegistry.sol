@@ -2,6 +2,7 @@ pragma solidity ^0.5.11;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 contract ContractRegistry is Ownable {
     mapping (string => address) private contractAddresses;
 

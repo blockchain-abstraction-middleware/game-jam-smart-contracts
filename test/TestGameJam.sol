@@ -4,6 +4,7 @@ import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/GameJam.sol";
 
+
 contract TestGameJam {
     // Truffle will send the TestGameJam one Ether after deploying the contract.
     uint public initialBalance = 1 ether;
@@ -38,16 +39,17 @@ contract TestGameJam {
         (r, ) = address(gameJam).call(abi.encodePacked(gameJam.payoutWinner.selector, potentialWinner));
         Assert.isFalse(r, "Call to payoutWinner should be unsuccessful when stage is InProgress");
     }
+
     function testAddingThisAddressAsACompetitor() public {
         require(gameJam.stage() == GameJam.Stages.Registration, "Stage should be Registration before start");
         gameJam.addCompetitor(address(this), validIpfsHash);
     }
+
     function testStartingTheDeployedContract() public {
         require(gameJam.stage() == GameJam.Stages.Registration, "Stage should be Registration before start");
         gameJam.start.value(0)();
         require(gameJam.stage() == GameJam.Stages.InProgress, "Stage should be InProgress after start");
     }
-
 
     function testFinishCantBeCalledWithANonRegisteredCompetitor() public {
         require(gameJam.stage() == GameJam.Stages.InProgress, "Stage should be Registration");
@@ -59,6 +61,7 @@ contract TestGameJam {
         Assert.isFalse(r, "Call to finish on the deployed contract should be unsuccessful as the winner isin't in the list");
 
     }
+
     function testFinishingTheDeployedContract() public {
         require(gameJam.stage() == GameJam.Stages.InProgress, "Stage should be JamInProgress before finish");
         gameJam.finish.value(0)(address(this));
