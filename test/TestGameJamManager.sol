@@ -10,15 +10,13 @@ import "../contracts/GameJamManager.sol";
 
 contract TestGameJamManager {
 
-    function testCreatingANewGameJamManager() public {
-        GameJamManager gameJamManager = new GameJamManager(DeployedAddresses.ContractRegistry());
-    }
+  function testCreatingANewGameJamManager() public {
+    GameJamManager gameJamManager = new GameJamManager(DeployedAddresses.ContractRegistry());
+  }
 
-    function testAddingNewGameJam() public {
-        GameJamManager gameJamManager = new GameJamManager(DeployedAddresses.ContractRegistry());
+  function testAddingNewGameJam() public {
+    GameJamManager gameJamManager = new GameJamManager(DeployedAddresses.ContractRegistry());
 
-        gameJamManager.addNewGameJam("Test GameJam", 1);
-    }
-
-
+    gameJamManager.addNewGameJam("Test GameJam", 1);
+  }
 }
