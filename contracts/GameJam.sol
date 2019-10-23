@@ -1,4 +1,4 @@
-pragma solidity 0.5.11;
+pragma solidity 0.5.12;
 
 import "openzeppelin-solidity/contracts/access/Roles.sol";
 
@@ -38,17 +38,13 @@ contract GameJam {
   }
 
   // This modifier moves to the next stage
-  // after the function is done.
   modifier transitionNext()
   {
     _;
     nextStage();
   }
 
-  // Role Setup
   // On Deploy, the sender of the transaction will be added as a admin
-  // Further admins could be added with a Role restricted _addGameJamAdmin() function
-  // Modifier for Admins
   modifier onlyGameJamAdmin()
   {
     require(isGameJamAdmin(msg.sender), "GameJamAdmin role required: caller does not have the GameJamAdmin role");
@@ -80,13 +76,12 @@ contract GameJam {
   event GameJamFinished(address winner);
 
   // Create a GameJam with a _balance
-  // which will be the amount to be distributed to winners
-  constructor(uint _balance)
+  constructor(uint _balance, address admin)
     public
     payable
   {
     balance = _balance;
-    _addGameJamAdmin(msg.sender);
+    _addGameJamAdmin(admin);
   }
 
   function addCompetitor(
@@ -102,27 +97,23 @@ contract GameJam {
     emit CompetitorAdded(competitor);
   }
 
-  // finish function is a payable used to declare the winner via their address
-  // the function should only be called able when the GameJam is in Registration
+  // start function is called when a game jam is ready to begin
   function start() external payable
-    onlyGameJamAdmin //Only an admin can start the GameJam
-    onlyAtStage(Stages.Registration) //GameJam can only be start when in Registration State
+    onlyGameJamAdmin
+    onlyAtStage(Stages.Registration)
     transitionNext
   {
     emit GameJameStarted(now);
   }
 
   // finish function is a payable used to declare the winner via their address
-  // the function should only be called able when the GameJam is in Progress
   function finish(address winner)
     external
     payable
-    onlyGameJamAdmin // Only an admin can finish the GameJam
+    onlyGameJamAdmin
     onlyAtStage(Stages.InProgress)
     transitionNext
   {
-    // Ensure the winner is a registered competitor.
-    // The mapping result is initialised "" so if winner is not in competitors then 0x0 is returned
     require(
       bytes(competitors[winner]).length != 0,
       "Winner should be a registered competitor"
@@ -131,16 +122,13 @@ contract GameJam {
   }
 
   // payoutWinner is used after the Jam to payout the declared winner
-  // and ultimately finish the GameJam.
   function payoutWinner(address payable winner)
     external
     payable
-    onlyGameJamAdmin // Only an admin can start the GameJam
+    onlyGameJamAdmin
     onlyAtStage(Stages.Finished)
   {
-    // If there are prizes to distribute
     if (balance > 0 && address(this).balance >= balance) {
-      // Send the winner their prize and progress the state to Finished Stage
       winner.transfer(balance);
       balance = 0;
       emit GameJamFinished(winner);

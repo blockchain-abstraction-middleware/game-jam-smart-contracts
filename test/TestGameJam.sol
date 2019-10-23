@@ -9,18 +9,18 @@ contract TestGameJam {
   // Truffle will send the TestGameJam one Ether after deploying the contract.
   uint public initialBalance = 1 ether;
   // Rather than use the GameJam project deployed by Migrations, create a new one, making this address the admin
-  GameJam gameJam = new GameJam(1);
+  GameJam gameJam = new GameJam(1, address(this));
   GameJam deployedGameJam = GameJam(DeployedAddresses.GameJam());
 
   string validIpfsHash = "QmPXgPCzbdviCVJTJxvYCWtMuRWCKRfNRVcSpARHDKFSha";
 
   function testInitialBalanceUsingDeployedContract() public {
     uint expected = 1;
-    Assert.equal(gameJam.balance(), expected, "Initial Balance should be zero");
+    Assert.equal(gameJam.balance(), expected, "Initial Balance should be 1");
   }
 
   function testInitialBalanceUsingNewContract() public {
-    GameJam gameJamNew = new GameJam(0);
+    GameJam gameJamNew = new GameJam(0, address(this));
     uint expected = 0;
     Assert.equal(gameJamNew.balance(), expected, "Initial Balance should be zero");
   }
@@ -91,5 +91,4 @@ contract TestGameJam {
     (r, ) = address(gameJam).call(abi.encodePacked(deployedGameJam.start.selector, ""));
     Assert.isFalse(r, "Call to start on the deployed contract should be unsuccessful as it was deployed during Migrations");
   }
-
 }

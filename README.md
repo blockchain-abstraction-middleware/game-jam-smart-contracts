@@ -15,4 +15,4 @@ Copy your infura project id to the `truffle-config.js` file
  
 ## To deploy
 - truffle console --network rinkeby
-- migrate
+- migrate --reset
