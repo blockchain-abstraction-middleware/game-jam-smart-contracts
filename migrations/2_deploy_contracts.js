@@ -5,6 +5,7 @@ var ContractRegistry = artifacts.require("./ContractRegistry.sol");
 
 module.exports = async (deployer, network) => {
   console.log(`deploying on ${network} network`)
+  const [admin] = await web3.eth.getAccounts();
 
   const initialBalance = 1
   
@@ -12,7 +13,7 @@ module.exports = async (deployer, network) => {
   const contractRegistry = await ContractRegistry.deployed()
   console.log(`Contract Registry Contract address: ${contractRegistry.address}`)
 
-  await deployer.deploy.apply(deployer, [GameJam, initialBalance])
+  await deployer.deploy.apply(deployer, [GameJam, initialBalance, admin])
   const gameJamContract = await GameJam.deployed()
   console.log(`Game Jam Contract address: ${gameJamContract.address}`)
 
