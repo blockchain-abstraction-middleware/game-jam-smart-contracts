@@ -12,7 +12,7 @@ contract('ContractRegistry', (accounts) => {
 
   it("instantiates a new contract registry smart contract", async () => {
     contractRegistry = await ContractRegistry.new()
-    gameJam = await GameJam.new(0, admin)
+    gameJam = await GameJam.new(admin)
   });
 
   it("should allow admin to register a contract", async () => {

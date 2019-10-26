@@ -9,18 +9,18 @@ contract TestGameJam {
   // Truffle will send the TestGameJam one Ether after deploying the contract.
   uint public initialBalance = 1 ether;
   // Rather than use the GameJam project deployed by Migrations, create a new one, making this address the admin
-  GameJam gameJam = new GameJam(1, address(this));
+  GameJam gameJam = new GameJam(address(this));
   GameJam deployedGameJam = GameJam(DeployedAddresses.GameJam());
 
   string validIpfsHash = "QmPXgPCzbdviCVJTJxvYCWtMuRWCKRfNRVcSpARHDKFSha";
 
-  function testInitialBalanceUsingDeployedContract() public {
-    uint expected = 1;
-    Assert.equal(gameJam.balance(), expected, "Initial Balance should be 1");
-  }
+  // function testInitialBalanceUsingDeployedContract() public {
+  //   uint expected = initialBalance;
+  //   Assert.equal(gameJam.balance(), expected, "Initial Balance should be 1");
+  // }
 
   function testInitialBalanceUsingNewContract() public {
-    GameJam gameJamNew = new GameJam(0, address(this));
+    GameJam gameJamNew = new GameJam(address(this));
     uint expected = 0;
     Assert.equal(gameJamNew.balance(), expected, "Initial Balance should be zero");
   }
@@ -47,24 +47,13 @@ contract TestGameJam {
 
   function testStartingTheDeployedContract() public {
     require(gameJam.stage() == GameJam.Stages.Registration, "Stage should be Registration before start");
-    gameJam.start.value(0)();
+    gameJam.start();
     require(gameJam.stage() == GameJam.Stages.InProgress, "Stage should be InProgress after start");
-  }
-
-  function testFinishCantBeCalledWithANonRegisteredCompetitor() public {
-    require(gameJam.stage() == GameJam.Stages.InProgress, "Stage should be Registration");
-    bool r;
-    // Make a call to finish the GameJam from this address, the admin
-    // sends the address of the deployedGameJam contract as a winner
-    // this address hasn't been registered as a competitor and the call should fail
-    (r, ) = address(gameJam).call(abi.encodePacked(gameJam.finish.selector, address(deployedGameJam)));
-    Assert.isFalse(r, "Call to finish on the deployed contract should be unsuccessful as the winner isin't in the list");
-
   }
 
   function testFinishingTheDeployedContract() public {
     require(gameJam.stage() == GameJam.Stages.InProgress, "Stage should be JamInProgress before finish");
-    gameJam.finish.value(0)(address(this));
+    gameJam.finish();
     require(gameJam.stage() == GameJam.Stages.Finished, "Stage should be WinnerDeclaration after finish");
   }
 
@@ -76,9 +65,8 @@ contract TestGameJam {
   }
 
   function testPayoutWinnerOnDeployedContract() public {
-    address payable potentialWinner = address(uint160(address(this))); // Cast to an address payable
     require(gameJam.stage() == GameJam.Stages.Finished, "Stage should be Finished");
-    gameJam.payoutWinner.value(0)(potentialWinner);
+    gameJam.payoutWinner();
   }
 
   function testRoleBlocksStartingTheDeployedContract() public {

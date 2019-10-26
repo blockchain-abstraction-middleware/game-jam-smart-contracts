@@ -15,18 +15,11 @@ interface IGameJam {
     external;
 
   function start()
-    external
-    payable;
+    external;
 
-  function finish(
-    address winner
-  )
-    external
-    payable;
+  function finish()
+    external;
 
-  function payoutWinner(
-    address payable winner
-  )
-    external
-    payable;
+  function payoutWinner()
+    external;
 }
