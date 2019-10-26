@@ -1,7 +1,8 @@
 pragma solidity 0.5.12;
 
 import "openzeppelin-solidity/contracts/access/Roles.sol";
-import "./GameJam.sol";
+import "./GameJamProxy.sol";
+import "./interfaces/IGameJam.sol";
 import "./interfaces/IRegistry.sol";
 
 
@@ -68,13 +69,13 @@ contract GameJamManager {
   }
 
   // createGameJam creates a new GameJam contract
-  function createGameJam(
-    address admin
-  )
+  function createGameJamProxy()
     private
-    returns (address _gameJamAddress)
+    returns (address _gameJamProxyAddress)
   {
-    return address((new GameJam).value(msg.value)(admin));
+    address gameJamAddress = registry.getContractAddress("GameJam");
+    address gameJamProxyAddress = address((new GameJamProxy).value(msg.value)(address(registry), gameJamAddress));
+    return gameJamProxyAddress;
   }
 
   // creates a new game jam contract and addNewGameJam contract to two lists
@@ -87,12 +88,16 @@ contract GameJamManager {
     onlyGameJamManager
     returns (bytes32)
   {
-    address _gameJamAddress = createGameJam(admin);
+    address payable _gameJamProxyAddress = address(uint(createGameJamProxy()));
 
-    gameJamList[_name] = _gameJamAddress;
-    gameJams.push(_gameJamAddress);
+    IGameJam(_gameJamProxyAddress).initializeGameJam(
+      admin
+    );
 
-    emit GameJamAdded(_gameJamAddress);
+    gameJamList[_name] = _gameJamProxyAddress;
+    gameJams.push(_gameJamProxyAddress);
+
+    emit GameJamAdded(_gameJamProxyAddress);
     return _name;
   }
 }

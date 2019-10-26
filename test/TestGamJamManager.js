@@ -1,20 +1,26 @@
 const ContractRegistry = artifacts.require("../contracts/ContractRegistry.sol");
 const GameJamManager = artifacts.require("../contracts/GameJamManager.sol");
 const GameJam = artifacts.require("../contracts/GameJam.sol");
+const IGameJam = artifacts.require("../interfaces/IGameJam.sol");
 
 const { testWillThrow } =  require('./utils/helpers')
 
 contract('GameJamManager', (accounts) => {
   const admin = accounts[0];
   const gameJamHost = accounts[1];
+  const pleb = accounts[2]
 
+  const initialValue = 100000
   const bytes32GMTK = '0x474d544b000000000000000000000000'
 
   let contractRegistry;
+  let gameJam;
   let gameJamManager;
 
-  beforeEach("instantiates a new game jam manager smart contract", async () => {
+  before("instantiates a new game jam manager smart contract", async () => {
     contractRegistry = await ContractRegistry.new()
+    gameJam = await GameJam.new()
+    contractRegistry.updateContractAddress('GameJam', gameJam.address)
     gameJamManager = await GameJamManager.new(contractRegistry.address)
   });
 
@@ -22,23 +28,22 @@ contract('GameJamManager', (accounts) => {
     const gameJam = await gameJamManager.addNewGameJam(
       bytes32GMTK,
       gameJamHost,
-      { from : admin, value: 100000 }
+      { from : admin, value: initialValue }
     )
 
-    const GMTKGameJam = await gameJamManager.gameJamList(bytes32GMTK)
+    const GMTKGameJamAddress = await gameJamManager.gameJamList(bytes32GMTK)
 
     assert.equal(
-      GMTKGameJam, 
+      GMTKGameJamAddress, 
       gameJam.logs[0].args.gameJamAddress, 
       "Incorrect game jam created"
     )
 
-    const newGameJamContract = await GameJam.at(gameJam.logs[0].args.gameJamAddress)
-    const balanceVar = await newGameJamContract.balance()
+    const newGameJamContract = await IGameJam.at(gameJam.logs[0].args.gameJamAddress)
     const balanceContract = await web3.eth.getBalance(gameJam.logs[0].args.gameJamAddress)
 
     assert.equal(
-      balanceVar.words[0],
+      initialValue,
       balanceContract,
       "Incorrect balance stored in contract"
     )
@@ -46,8 +51,8 @@ contract('GameJamManager', (accounts) => {
     await testWillThrow(
       newGameJamContract.start,
       [],
-      { from: admin },
-      "GameJamAdmin role required: caller does not have the GameJamAdmin role"
+      { from: pleb },
+      "Error: Returned error: VM Exception while processing transaction: revert"
     )
   });
 });

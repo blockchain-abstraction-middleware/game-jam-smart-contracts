@@ -4,7 +4,7 @@ var ContractRegistry = artifacts.require("./ContractRegistry.sol");
 
 
 module.exports = async (deployer, network) => {
-  console.log(`deploying on ${network} network`)
+  console.log(`Deploying on ${network} network`)
   const [admin] = await web3.eth.getAccounts();
   
   await deployer.deploy.apply(deployer, [ContractRegistry])
@@ -24,5 +24,5 @@ module.exports = async (deployer, network) => {
 
   console.log(`Updated contract manager to contain contracts`)
 
-  console.log(`Finisheded deployment on ${network} network`)
+  console.log(`Finished deployment on ${network} network`)
 };
