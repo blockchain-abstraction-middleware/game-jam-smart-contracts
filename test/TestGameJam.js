@@ -6,15 +6,16 @@ contract('GameJam', (accounts) => {
   const admin = accounts[0];
   const competitor = accounts[1];
   const pleb = accounts[2];
-  const initialBalance = 100000
 
-  var validIpfsHash = 'QmPXgPCzbdviCVJTJxvYCWtMuRWCKRfNRVcSpARHDKFSha'
+  const initialBalance = 100000
+  const validIpfsHash = 'QmPXgPCzbdviCVJTJxvYCWtMuRWCKRfNRVcSpARHDKFSha'
 
   let gameJam;
 
   describe('it should test a full round trip using one GameJam contract', async () => {
     before(async() => {
-      gameJam = await GameJam.new(admin, { from: admin, value: initialBalance })
+      gameJam = await GameJam.new()
+      gameJam.initializeGameJam(admin, { from: admin, value: initialBalance })
     })
 
     it('balance variable should match the initialBalance passed in constructor', async () => {
@@ -66,15 +67,6 @@ contract('GameJam', (accounts) => {
     it('should be In Progress after previous test which started the jam', async () => {
       const stage = await gameJam.stage();
       assert.equal(stage, 1, 'Stage should be 1; InProgress')
-    });
-  
-    it('should allow a new instance of the contract to start the jam with a transaction', async () => {
-      const gameJam = await GameJam.new(admin);
-      
-      const jamStarted = await gameJam.start.sendTransaction({
-        from: admin
-      })
-      assert.ok(jamStarted.logs[0].args.startTime, 'Start time was not entered')
     });
   
     it('should allow have two registered competitors', async () => {
