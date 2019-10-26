@@ -39,7 +39,7 @@ contract GameJamManager {
     return _gameJamManager.has(account);
   }
 
-  // Return all tracked issuer addresses
+  // Return all game jam addresses
   function getAllGameJamAddresses()
     public
     view
@@ -69,13 +69,12 @@ contract GameJamManager {
 
   // createGameJam creates a new GameJam contract
   function createGameJam(
-    uint prizeBalance,
     address admin
   )
     private
     returns (address _gameJamAddress)
   {
-    return address((new GameJam).value(msg.value)(prizeBalance, admin));
+    return address((new GameJam).value(msg.value)(admin));
   }
 
   // creates a new game jam contract and addNewGameJam contract to two lists
@@ -88,7 +87,7 @@ contract GameJamManager {
     onlyGameJamManager
     returns (bytes32)
   {
-    address _gameJamAddress = createGameJam(msg.value, admin);
+    address _gameJamAddress = createGameJam(admin);
 
     gameJamList[_name] = _gameJamAddress;
     gameJams.push(_gameJamAddress);

@@ -6,6 +6,9 @@ import "openzeppelin-solidity/contracts/access/Roles.sol";
 contract GameJam {
   using Roles for Roles.Role;
 
+  // Define the roles
+  Roles.Role private admins;
+
   enum Stages
   {
     Registration,
@@ -13,13 +16,33 @@ contract GameJam {
     Finished
   }
 
+  // Track the balance of the smart contract
   uint public balance;
+
+  // List of addresses for Game Jam competitors
+  address[] private competitorAddresses;
 
   // Set the initial Stage
   Stages public stage = Stages.Registration;
 
-  // Define the roles
-  Roles.Role private admins;
+  // winner of the game jam
+  address payable winner;
+
+  // Struct for competitor data
+  struct CompetitorData {
+    string ipfsHash;
+    uint votes;
+  }
+
+  // mapping for addresses to game locations
+  mapping(address => CompetitorData) public competitors;
+
+  event GameJamAdminAdded(address indexed account);
+  event CompetitorAdded(address competitor);
+  event VoteCast(address competitorVotedFor);
+  event GameJameStarted(uint startTime);
+  event WinnerDeclared(address winner);
+  event GameJamFinished(address winner);
 
   // Modifier used to restrict access unless a given Stage is active
   modifier onlyAtStage(Stages _stage) {
@@ -28,6 +51,15 @@ contract GameJam {
       "Function cannot be called at this time."
     );
     _;
+  }
+
+  // Create a GameJam with a _balance
+  constructor(address admin)
+    public
+    payable
+  {
+    balance = msg.value;
+    _addGameJamAdmin(admin);
   }
 
   // Advance the state of the contract to the next stage
@@ -67,38 +99,36 @@ contract GameJam {
     emit GameJamAdminAdded(account);
   }
 
-  mapping(address => string) public competitors;
-
-  event GameJamAdminAdded(address indexed account);
-  event CompetitorAdded(address competitor);
-  event GameJameStarted(uint startTime);
-  event WinnerDeclared(address winner);
-  event GameJamFinished(address winner);
-
-  // Create a GameJam with a _balance
-  constructor(uint _balance, address admin)
+  // Return all competitor addresses
+  function getAllCompetitorAddresses()
     public
-    payable
+    view
+    returns (address[] memory)
   {
-    balance = _balance;
-    _addGameJamAdmin(admin);
+    return competitorAddresses;
   }
 
+  // addCompetitor is called when a user registers for a GameJam
   function addCompetitor(
     address competitor,
     string calldata ipfsHash
   )
     external
+    onlyGameJamAdmin
     onlyAtStage(Stages.Registration)
   {
-    require(bytes(ipfsHash).length == 46, "incorrect length");
-    competitors[competitor] = ipfsHash;
+    require(bytes(ipfsHash).length != 0, "incorrect length");
+    competitorAddresses.push(competitor);
+
+    competitors[competitor].ipfsHash = ipfsHash;
+    competitors[competitor].votes = 0;
 
     emit CompetitorAdded(competitor);
   }
 
   // start function is called when a game jam is ready to begin
-  function start() external payable
+  function start()
+    external
     onlyGameJamAdmin
     onlyAtStage(Stages.Registration)
     transitionNext
@@ -106,25 +136,44 @@ contract GameJam {
     emit GameJameStarted(now);
   }
 
-  // finish function is a payable used to declare the winner via their address
-  function finish(address winner)
+  // vote function is used to vote for competitors
+  function vote(address competitor)
     external
-    payable
+    onlyGameJamAdmin
+    onlyAtStage(Stages.InProgress)
+  {
+    require(
+      bytes(competitors[competitor].ipfsHash).length != 0,
+      "Should be a registered competitor"
+    );
+
+    competitors[competitor].votes++;
+    emit VoteCast(competitor);
+  }
+
+  // finish function is used to declare the winner via their address
+  function finish()
+    external
     onlyGameJamAdmin
     onlyAtStage(Stages.InProgress)
     transitionNext
   {
-    require(
-      bytes(competitors[winner]).length != 0,
-      "Winner should be a registered competitor"
-    );
-    emit WinnerDeclared(winner);
+    address winningCompetitor = competitorAddresses[0];
+    for(uint i = 0; i < competitorAddresses.length; i++) {
+      if(competitors[winningCompetitor].votes < competitors[competitorAddresses[i]].votes) {
+        winningCompetitor = competitorAddresses[i];
+      }
+    }
+
+    // Have to do this strange conversion to make `address` => `address payable`
+    winner = address(uint(winningCompetitor));
+
+    emit WinnerDeclared(winningCompetitor);
   }
 
   // payoutWinner is used after the Jam to payout the declared winner
-  function payoutWinner(address payable winner)
+  function payoutWinner()
     external
-    payable
     onlyGameJamAdmin
     onlyAtStage(Stages.Finished)
   {
