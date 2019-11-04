@@ -9,7 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "solium --dir .",
-    "livelint": "solium --watch --dir contracts/"
+    "livelint": "solium --watch --dir contracts/",
+    "remix": "cd ./contracts && remix-ide"
   },
   "author": "blockabstraction devs",
   "license": "MIT",
@@ -18,6 +19,7 @@
     "truffle-hdwallet-provider": "^1.0.17"
   },
   "devDependencies": {
+    "remix-ide": "^0.8.8",
     "solium": "^1.2.5"
   }
 }
