@@ -16,3 +16,7 @@ Copy your infura project id to the `truffle-config.js` file
 ## To deploy
 - truffle console --network rinkeby
 - migrate --reset
+
+## To load local files on remix-ide
+- yarn remix
+- open `http://localhost:8080` 
