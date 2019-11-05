@@ -26,7 +26,7 @@ contract GameJamCommon {
   Stages public stage = Stages.Registration;
 
   // winner of the game jam
-  address payable winner;
+  address payable[] winners;
 
   // Struct for competitor data
   struct CompetitorData {
