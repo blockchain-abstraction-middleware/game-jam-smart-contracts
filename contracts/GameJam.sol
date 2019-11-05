@@ -9,8 +9,8 @@ contract GameJam is GameJamCommon {
   event CompetitorAdded(address competitor);
   event VoteCast(address competitorVotedFor);
   event GameJameStarted(uint startTime);
-  event WinnerDeclared(address winner);
-  event GameJamFinished(address winner);
+  event WinnerDeclared(address payable[] winners);
+  event GameJamFinished(address payable[] winners);
 
   function initializeGameJam(address admin)
     public
@@ -86,17 +86,18 @@ contract GameJam is GameJamCommon {
     onlyAtStage(Stages.InProgress)
     transitionNext
   {
-    address winningCompetitor = competitorAddresses[0];
+    uint winningVoteCount = competitors[competitorAddresses[0]].votes;
     for(uint i = 0; i < competitorAddresses.length; i++) {
-      if(competitors[winningCompetitor].votes < competitors[competitorAddresses[i]].votes) {
-        winningCompetitor = competitorAddresses[i];
+      if(winningVoteCount < competitors[competitorAddresses[i]].votes) {
+        winningVoteCount = competitors[competitorAddresses[i]].votes;
+        delete winners;
+        winners.push(address(uint(competitorAddresses[i])));
+      } else if(winningVoteCount == competitors[competitorAddresses[i]].votes) {
+        winners.push(address(uint(competitorAddresses[i])));
       }
     }
 
-    // Have to do this strange conversion to make `address` => `address payable`
-    winner = address(uint(winningCompetitor));
-
-    emit WinnerDeclared(winningCompetitor);
+    emit WinnerDeclared(winners);
   }
 
   // payoutWinner is used after the Jam to payout the declared winner
@@ -105,10 +106,13 @@ contract GameJam is GameJamCommon {
     onlyGameJamAdmin
     onlyAtStage(Stages.Finished)
   {
-    if (balance > 0 && address(this).balance >= balance) {
-      winner.transfer(balance);
+    uint payout = balance / winners.length;
+    for(uint i = 0; i < winners.length; i++) {
+      if (payout > 0 && address(this).balance >= payout) {
+        winners[i].transfer(payout);
+      }
       balance = 0;
-      emit GameJamFinished(winner);
+      emit GameJamFinished(winners);
     }
   }
 }
