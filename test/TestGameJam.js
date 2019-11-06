@@ -162,5 +162,33 @@ contract('GameJam', (accounts) => {
       assert.equal(otherCompetitorBalanceAfterPayout > otherCompetitorBalanceBeforePayout, true, "Winner was not transfered ETH")
       assert.equal(competitorBalanceAfterPayout > competitorBalanceBeforePayout, true, "Winner was not transfered ETH")
     });
+
+    it('should payout evenly to each winner', async () => {
+      gameJam = await GameJam.new()
+
+      gameJam.initializeGameJam(admin, { from: admin, value: initialBalance })
+      gameJam.addCompetitor(otherCompetitor, validIpfsHash)
+      gameJam.addCompetitor(competitor, validIpfsHash)
+      gameJam.addCompetitor(pleb, validIpfsHash)
+
+      gameJam.start()
+      gameJam.vote(otherCompetitor)
+      gameJam.vote(competitor)
+      gameJam.vote(pleb)
+      gameJam.finish()
+
+      const otherCompetitorBalanceBeforePayout = await web3.eth.getBalance(otherCompetitor)
+      const competitorBalanceBeforePayout = await web3.eth.getBalance(competitor)
+      const plebBalanceBeforePayout = await web3.eth.getBalance(pleb)
+      
+      await gameJam.payoutWinners();
+
+      const otherCompetitorBalanceAfterPayout = await web3.eth.getBalance(otherCompetitor)
+      const competitorBalanceAfterPayout = await web3.eth.getBalance(competitor)
+      const plebBalanceAfterPayout = await web3.eth.getBalance(pleb)
+
+      assert.equal(competitorBalanceAfterPayout - competitorBalanceBeforePayout == otherCompetitorBalanceAfterPayout - otherCompetitorBalanceBeforePayout, true, "Winners did not get the same payout")
+      assert.equal(competitorBalanceAfterPayout - competitorBalanceBeforePayout == plebBalanceAfterPayout - plebBalanceBeforePayout, true, "Winners2 did not get the same payout")
+    });
   })
 });
