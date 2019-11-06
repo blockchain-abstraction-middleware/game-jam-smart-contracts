@@ -105,7 +105,7 @@ contract('GameJam', (accounts) => {
       const finishTx = await gameJam.finish()
   
       assert.equal(
-        finishTx.logs[0].args.winner,
+        finishTx.logs[0].args.winners[0],
         competitor,
         'Failed to declare correct winner'
       )
@@ -119,7 +119,7 @@ contract('GameJam', (accounts) => {
       const payoutWinnerTx = await gameJam.payoutWinner();
 
       assert.equal(
-        payoutWinnerTx.logs[0].args.winner,
+        payoutWinnerTx.logs[0].args.winners[0],
         competitor,
         'Failed to pay correct winner'
       )
