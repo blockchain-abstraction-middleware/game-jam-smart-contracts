@@ -6,6 +6,7 @@ contract('GameJam', (accounts) => {
   const admin = accounts[0];
   const competitor = accounts[1];
   const pleb = accounts[2];
+  const otherCompetitor = accounts[3];
 
   const initialBalance = 100000
   const validIpfsHash = 'QmPXgPCzbdviCVJTJxvYCWtMuRWCKRfNRVcSpARHDKFSha'
@@ -116,16 +117,50 @@ contract('GameJam', (accounts) => {
 
     it('should payout the correct winner', async () => {
       const balanceBeforePayout = await web3.eth.getBalance(competitor)
-      const payoutWinnerTx = await gameJam.payoutWinner();
+      const payoutWinnersTx = await gameJam.payoutWinners();
 
       assert.equal(
-        payoutWinnerTx.logs[0].args.winners[0],
+        payoutWinnersTx.logs[0].args.winners[0],
         competitor,
         'Failed to pay correct winner'
       )
 
       const balanceAfterPayout = await web3.eth.getBalance(competitor)
       assert.equal(balanceAfterPayout > balanceBeforePayout, true, "Winner was not transfered ETH")
+    });
+
+    it('should payout the shared winners', async () => {
+      gameJam = await GameJam.new()
+
+      gameJam.initializeGameJam(admin, { from: admin, value: initialBalance })
+      gameJam.addCompetitor(otherCompetitor, validIpfsHash)
+      gameJam.addCompetitor(competitor, validIpfsHash)
+
+      gameJam.start()
+      gameJam.vote(otherCompetitor)
+      gameJam.vote(competitor)
+      gameJam.finish()
+
+      const otherCompetitorBalanceBeforePayout = await web3.eth.getBalance(otherCompetitor)
+      const competitorBalanceBeforePayout = await web3.eth.getBalance(competitor)
+      const payoutWinnersTx = await gameJam.payoutWinners();
+
+      assert.equal(
+        payoutWinnersTx.logs[0].args.winners[0],
+        otherCompetitor,
+        'Failed to pay correct winner'
+      )
+      assert.equal(
+        payoutWinnersTx.logs[0].args.winners[1],
+        competitor,
+        'Failed to pay correct winner'
+      )
+
+      const otherCompetitorBalanceAfterPayout = await web3.eth.getBalance(otherCompetitor)
+      const competitorBalanceAfterPayout = await web3.eth.getBalance(competitor)
+
+      assert.equal(otherCompetitorBalanceAfterPayout > otherCompetitorBalanceBeforePayout, true, "Winner was not transfered ETH")
+      assert.equal(competitorBalanceAfterPayout > competitorBalanceBeforePayout, true, "Winner was not transfered ETH")
     });
   })
 });

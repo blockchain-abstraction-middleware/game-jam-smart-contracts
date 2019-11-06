@@ -37,6 +37,6 @@ interface IGameJam {
   function finish()
     external;
 
-  function payoutWinner()
+  function payoutWinners()
     external;
 }

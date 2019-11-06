@@ -90,9 +90,9 @@ contract('GameJamProxy', (accounts) => {
       )
     });
 
-    it("should be able to proxy the payoutWinner call to the GameJam Contract", async () => {
+    it("should be able to proxy the payoutWinners call to the GameJam Contract", async () => {
       await testWillThrow(
-        gameJamProxy.payoutWinner,
+        gameJamProxy.payoutWinners,
         [],
         { from: competitor },
         "Error: Returned error: VM Exception while processing transaction: revert"
@@ -100,7 +100,7 @@ contract('GameJamProxy', (accounts) => {
 
       const balanceBeforePayout = await web3.eth.getBalance(competitor)
 
-      await gameJamProxy.payoutWinner({ from: gameJamHost })
+      await gameJamProxy.payoutWinners({ from: gameJamHost })
   
       const balanceAfterPayout = await web3.eth.getBalance(competitor)
   

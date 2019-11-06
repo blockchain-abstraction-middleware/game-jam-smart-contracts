@@ -100,8 +100,8 @@ contract GameJam is GameJamCommon {
     emit WinnerDeclared(winners);
   }
 
-  // payoutWinner is used after the Jam to payout the declared winner
-  function payoutWinner()
+  // payoutWinners is used after the Jam to payout the declared winner
+  function payoutWinners()
     external
     onlyGameJamAdmin
     onlyAtStage(Stages.Finished)
@@ -111,8 +111,8 @@ contract GameJam is GameJamCommon {
       if (payout > 0 && address(this).balance >= payout) {
         winners[i].transfer(payout);
       }
-      balance = 0;
-      emit GameJamFinished(winners);
     }
+    balance = 0;
+    emit GameJamFinished(winners);
   }
 }
