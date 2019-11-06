@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "solium --dir .",
     "livelint": "solium --watch --dir contracts/",
-    "remix": "cd ./contracts && remix-ide"
+    "remix": "remix-ide"
   },
   "author": "blockabstraction devs",
   "license": "MIT",
