@@ -84,7 +84,7 @@ contract('GameJamProxy', (accounts) => {
       const finishTx = await gameJamProxy.finish({ from: gameJamHost })
 
       assert.equal(
-        finishTx.logs[0].args.winner,
+        finishTx.logs[0].args.winners[0],
         competitor,
         'Failed to declare correct winner'
       )
